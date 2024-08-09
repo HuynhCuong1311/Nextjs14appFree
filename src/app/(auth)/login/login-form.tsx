@@ -13,44 +13,39 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { handleErrorApi } from "@/lib/utils";
-import {
-  RegisterBody,
-  RegisterBodyType,
-} from "@/schemaValidations/auth.schema";
+import { LoginBody, LoginBodyType } from "@/schemaValidations/auth.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
-const RegisterForm = () => {
+const LoginForm = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
   // 1. Define your form.
-  const form = useForm<RegisterBodyType>({
-    resolver: zodResolver(RegisterBody),
+  const form = useForm<LoginBodyType>({
+    resolver: zodResolver(LoginBody),
     defaultValues: {
-      name: "",
       email: "",
       password: "",
-      confirmPassword: "",
     },
   });
 
   // 2. Define a submit handler.
-  async function onSubmit(values: RegisterBodyType) {
+  async function onSubmit(values: LoginBodyType) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     if (loading) return;
     setLoading(true);
     try {
-      const result = await authApiRequest.register(values);
-      toast({
-        description: result.payload.message,
-      });
+      const result = await authApiRequest.login(values);
       await authApiRequest.auth({
         sessionToken: result.payload.data.token,
+      });
+      toast({
+        description: result.payload.message,
       });
       router.push("/me");
     } catch (error: any) {
@@ -66,19 +61,6 @@ const RegisterForm = () => {
         className="space-y-2 w-[400px] "
         noValidate
       >
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Tên</FormLabel>
-              <FormControl>
-                <Input placeholder="shadcn" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <FormField
           control={form.control}
           name="email"
@@ -105,25 +87,13 @@ const RegisterForm = () => {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="confirmPassword"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nhập lại Mật Khẩu</FormLabel>
-              <FormControl>
-                <Input placeholder="shadcn" type="password" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+
         <Button type="submit" className="!mt-8 w-full">
-          Đăng ký
+          Đăng nhập
         </Button>
       </form>
     </Form>
   );
 };
 
-export default RegisterForm;
+export default LoginForm;
